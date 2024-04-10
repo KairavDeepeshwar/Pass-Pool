@@ -1,0 +1,686 @@
+@app.route('/profile/<reg_number>')
+def profile(reg_number):
+    user = students_df[students_df['registration_number'] == reg_number]
+    return render_template('profile.html', reg_number=reg_number)
+
+@app.route('/generate_outpass', methods=['GET', 'POST'])
+def generate_outpass():
+    if request.method == 'POST':
+        reg_number = request.form['reg_number']
+        out_date = request.form['out_date']
+        out_time = request.form['out_time']
+        in_date = request.form['in_date']
+        in_time = request.form['in_time']
+        reason = request.form['reason']
+
+        # Assuming logic for generating outpass and storing in CSV here
+
+        flash('Outpass generated successfully.')
+        return redirect(url_for('home', reg_number=reg_number))
+
+    return render_template('generate_outpass.html')
+
+@app.route('/carpool', methods=['GET', 'POST'])
+def carpool():
+    if request.method == 'POST':
+        # Assuming logic for carpooling here
+        flash('Carpool created successfully.')
+        return redirect(url_for('home', reg_number=request.form['reg_number']))
+
+    return render_template('carpool.html')
+
+@app.route('/ride_details/<ride_id>')
+def ride_details(ride_id):
+    # Assuming logic for displaying ride details here
+    return render_template('ride_details.html', ride_id=ride_id)
+
+
+
+
+
+
+
+
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+import pandas as pd
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = 'supersecretkey'
+
+# Set up paths to CSV files
+STUDENT_CSV = "data/student.csv"
+OUTPASS_CSV = "data/outpass.csv"
+TRIP_CSV = "data/trip.csv"
+TRIPSTUDENTS_CSV = "data/tripstudents.csv"
+PROCTOR_CSV = "data/proctor.csv"
+VTOP_CSV = "data/vtop.csv"
+
+# Load CSV files into DataFrames
+students_df = pd.read_csv(STUDENT_CSV)
+outpass_df = pd.read_csv(OUTPASS_CSV)
+trip_df = pd.read_csv(TRIP_CSV)
+tripstudents_df = pd.read_csv(TRIPSTUDENTS_CSV)
+proctor_df = pd.read_csv(PROCTOR_CSV)
+vtop_df = pd.read_csv(VTOP_CSV)
+
+# Convert vtop_df to a dictionary of records
+vtop_record = vtop_df.to_dict(orient='records')
+
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        reg_number = request.form['reg_number']
+        password = request.form['password']
+
+        # Find the user with the given registration number and password
+        user = next((u for u in vtop_record if u['registration_number'] == reg_number and u['vtop_password'] == password), None)
+
+        if user:
+            # Store the user in the session
+            session['user'] = user
+            return redirect(url_for('home', reg_number=user['registration_number']))
+        else:
+            flash('Invalid credentials. Please try again.', 'error')
+            return render_template('login.html')
+
+    return render_template('login.html')
+
+@app.route('/home/<reg_number>')
+def home(reg_number):
+    # Get the user from the session
+    user = session.get('user')
+
+    if user and user['registration_number'] == reg_number:
+        return render_template('home.html', user=user)
+    else:
+        return redirect(url_for('login'))
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+
+
+
+ <!--<header>
+        <img src="{{ url_for('static', filename='images/passpool_logo.png') }}" alt="Pass&pool Logo">
+        <a href="{{ url_for('profile', reg_number=user['registration_number']) }}">
+            <img src="{{ url_for('static', filename='images/profile_icon.png') }}" alt="Profile">
+        </a>
+    </header>
+    <h1>Welcome to Pass&Pool</h1>
+    <button><a href="{{ url_for('outpass_application') }}">Generate Outpass</a></button>
+    <button><a href="{{ url_for('carpool_details') }}">Carpool</a></button>-->
+
+
+
+
+    @app.route('/generate_outpass', methods=['POST', 'GET'])
+def generate_outpass():
+    reg_number = session.get('reg_number')
+    if request.method == 'POST':
+        # Process form data to generate outpass
+        return redirect(url_for('success'))
+    return render_template (
+        'generate_outpass.html',
+        title='Outpass Generator',
+        year=datetime.now().year, 
+        reg_number=reg_number
+    )
+    
+
+
+
+
+
+    from flask import Flask, render_template, request, redirect, url_for, flash, session
+import pandas as pd
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'
+
+@app.route("/")
+def index():
+    return render_template("login.html")
+
+@app.route('/login')
+def login(): 
+    return render_template('login.html', message='Please log in')
+
+@app.route('/auth', methods=['POST', 'GET']) 
+def auth():
+    if request.method == 'POST':
+        registration_number = request.form['registration_number']
+        password = request.form['password']
+        vtop_df = pd.read_csv('C:\\Users\\Eshwar\\Desktop\\PassPool\\data\\vtop.csv')
+        dict_records = vtop_df.to_dict(orient='records')
+        
+        for i in dict_records:
+            if registration_number == i['registration_number'] and password == i['vtop_password']:
+                student_df = pd.read_csv('C:\\Users\\Eshwar\\Desktop\\PassPool\\data\\student.csv')
+                stud_records = student_df.to_dict(orient='records')
+                for j in stud_records:
+                    if i['registration_number'] == j['registration_number']:
+                        student_name = j['student_name']
+                        session['student_name'] = student_name
+                        session['reg_number'] = registration_number
+                return redirect(url_for('home'))  # Redirect to home page after successful authentication
+    
+    # If authentication fails, render login page with error message
+    return login("Incorrect registration number or password")
+
+@app.route('/home')
+def home():
+    student_name = session.get('student_name')
+    return render_template(
+        'home.html',
+        title='Home Page',
+        year=datetime.now().year, 
+        student_name=student_name
+    )
+@app.route('/generate_outpass', methods=['POST', 'GET'])
+def generate_outpass():
+    reg_number = session.get('reg_number')
+    if request.method == 'POST':
+        out_date = request.form['out_date']
+        out_time = request.form['out_time']
+        in_date = request.form['in_date']
+        in_time = request.form['in_time']
+        reason = request.form['reason']
+        leave_type = request.form['leave_type']
+        
+        # Create a unique outpass_id
+        outpass_id = len(pd.read_csv('C:\\Users\\Eshwar\\Desktop\\PassPool\\data\\outpass.csv')) + 1
+        
+        # Create a DataFrame with the new outpass data
+        new_outpass = pd.DataFrame({
+            'outpass_id': [outpass_id],
+            'registration_number': [reg_number],
+            'out_date': [out_date],
+            'out_time': [out_time],
+            'in_date': [in_date],
+            'in_time': [in_time],
+            'reason': [reason],
+            'leave_type': [leave_type]
+        })
+        
+        # Append the new outpass data to the outpass.csv file
+        new_outpass.to_csv('C:\\Users\\Eshwar\\Desktop\\PassPool\\data\\outpass.csv', mode='a', header=False, index=False)
+        
+        return redirect(url_for('success'))
+    
+    return render_template (
+        'generate_outpass.html',
+        title='Outpass Generator',
+        year=datetime.now().year, 
+        reg_number=reg_number
+    )
+
+
+@app.route('/success')
+def success():
+    return render_template (
+        'success.html',
+        title='Success',
+        year=datetime.now().year, 
+        
+    )
+
+
+@app.route('/carpool')
+def carpool():
+    return render_template(
+        'carpool.html',
+        title='Carpool',
+        year=datetime.now().year
+    )
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Planner</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+    body {
+        font-family: Raleway;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #000000;
+    }
+    .container {
+        width: 600px;
+        padding: 40px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+        line-height: 30px;
+        margin-top: 250px;
+        padding-top: 100px;
+    }
+    #map {
+        height: 200px;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    input{
+        margin-bottom: 10px;
+        padding: 10px;
+        width: 200px;
+    }
+    button {
+        width: 100%;
+        padding: 15px;
+        background-color: #2d138e;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 20px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        }
+
+    button:hover {
+        background-color: #dc712f;
+    }
+    #fromMap,#toMap{
+        border: 2px solid black;
+        margin-bottom: 20px;
+    }
+</style>
+</head>
+<body>
+    <br><br><br>
+    <div class="container">
+    <div id="map"></div><br><br><br>
+    <h1 style="color: #000000;text-align: center;">MY RIDE</h1>
+    <hr>
+    <div>
+        <label for="travelDate">Travel Date:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="date" id="travelDate" min="" max="" onchange="updateMinMaxTime()">
+    </div>
+    <div>
+        <label for="travelTime">Travel Time:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="time" id="travelTime">
+    </div>
+    <hr>
+    <div>
+        <label for="fromLocation">From Location:&nbsp;</label>
+        <input type="text" id="fromLocation">
+        <button onclick="geocodeFromLocation()">GET COORDINATES</button>
+    </div>
+    <h3>SOURCE:</h3>
+    <div id="fromMap" style="height: 300px; width: 100%;"></div>
+    <div id="fromCoordinates"></div>
+    <hr>
+    <div>
+        <label for="toLocation">To Location:</label>
+        <input type="text" id="toLocation">
+        <button onclick="geocodeToLocation()">GET COORDINATES</button>
+    </div>
+    <h3>DESTINATION:</h3>
+    <div id="toMap" style="height: 300px; width: 100%;"></div>
+    <div id="toCoordinates"></div>
+    <button>SUBMIT</button>
+
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    // Function to initialize map for "From" location
+var fromMap = L.map('fromMap').setView([0, 0], 2);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(fromMap);
+var fromMarker = null;
+
+// Function to initialize map for "To" location
+var toMap = L.map('toMap').setView([0, 0], 2);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(toMap);
+var toMarker = null;
+
+function geocodeFromLocation() {
+    var location = document.getElementById('fromLocation').value;
+    geocode(location, function(latitude, longitude) {
+        if (latitude !== null && longitude !== null) {
+            document.getElementById('fromCoordinates').innerHTML = 'From Latitude: ' + latitude + '<br>From Longitude: ' + longitude;
+            if (fromMarker) {
+                fromMarker.setLatLng([latitude, longitude]);
+            } else {
+                fromMarker = L.marker([latitude, longitude]).addTo(fromMap);
+            }
+            fromMap.setView([latitude, longitude], 13);
+        } else {
+            document.getElementById('fromCoordinates').innerHTML = 'From location not found';
+        }
+    });
+}
+
+function geocodeToLocation() {
+    var location = document.getElementById('toLocation').value;
+    geocode(location, function(latitude, longitude) {
+        if (latitude !== null && longitude !== null) {
+            document.getElementById('toCoordinates').innerHTML = 'To Latitude: ' + latitude + '<br>To Longitude: ' + longitude;
+            if (toMarker) {
+                toMarker.setLatLng([latitude, longitude]);
+            } else {
+                toMarker = L.marker([latitude, longitude]).addTo(toMap);
+            }
+            toMap.setView([latitude, longitude], 13);
+        } else {
+            document.getElementById('toCoordinates').innerHTML = 'To location not found';
+        }
+    });
+}
+
+function geocode(location, callback) {
+    // Make a request to Nominatim API to geocode the location
+    fetch('https://nominatim.openstreetmap.org/search?q=' + location + '&format=json')
+    .then(response => response.json())
+    .then(data => {
+        if (data && data.length > 0) {
+            var latitude = parseFloat(data[0].lat);
+            var longitude = parseFloat(data[0].lon);
+            callback(latitude, longitude);
+        } else {
+            callback(null, null);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        callback(null, null);
+    });
+}
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(chennaiMap);
+
+    var fromMarker = L.marker([13.0827, 80.2707], {draggable: true}).addTo(chennaiMap);
+    var toMarker = L.marker([13.0878, 80.2785], {draggable: true}).addTo(chennaiMap);
+
+    fromMarker.on('dragend', function(event) {
+        document.getElementById('fromLocation').value = event.target.getLatLng().lat + ', ' + event.target.getLatLng().lng;
+    });
+
+    toMarker.on('dragend', function(event) {
+        document.getElementById('toLocation').value = event.target.getLatLng().lat + ', ' + event.target.getLatLng().lng;
+    });
+
+    function updateFromMap() {
+        var fromLocation = document.getElementById('fromLocation').value.split(',');
+        fromMarker.setLatLng(fromLocation);
+        chennaiMap.setView(fromLocation, 13);
+    }
+
+    function updateToMap() {
+        var toLocation = document.getElementById('toLocation').value.split(',');
+        toMarker.setLatLng(toLocation);
+        chennaiMap.setView(toLocation, 13);
+    }
+
+    // Update min and max values for travel time based on selected travel date
+    function updateMinMaxTime() {
+        var travelDate = document.getElementById('travelDate').value;
+        document.getElementById('travelTime').min = travelDate ? "00:00" : "";
+        document.getElementById('travelTime').max = travelDate ? "23:59" : "";
+    }
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+from flask import Flask, render_template, request, redirect, url_for, session
+import pandas as pd
+from datetime import datetime
+import csv
+from itertools import count
+
+app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'
+
+@app.route("/")
+def index():
+    return render_template("login.html")
+
+@app.route('/login')
+def login(): 
+    return render_template('login.html', message='Please log in')
+
+@app.route('/auth', methods=['POST', 'GET']) 
+def auth():
+    if request.method == 'POST':
+        registration_number = request.form['registration_number']
+        password = request.form['password']
+        vtop_df = pd.read_csv('C:\\Users\\Eshwar\\Desktop\\PassPool\\data\\vtop.csv')
+        dict_records = vtop_df.to_dict(orient='records')
+        
+        for i in dict_records:
+            if registration_number == i['registration_number'] and password == i['vtop_password']:
+                student_df = pd.read_csv('C:\\Users\\Eshwar\\Desktop\\PassPool\\data\\student.csv')
+                stud_records = student_df.to_dict(orient='records')
+                for j in stud_records:
+                    if i['registration_number'] == j['registration_number']:
+                        student_name = j['student_name']
+                        session['student_name'] = student_name
+                        session['reg_number'] = registration_number
+                return redirect(url_for('home'))  # Redirect to home page after successful authentication
+    
+    # If authentication fails, render login page with error message
+    return login("Incorrect registration number or password")
+
+@app.route('/home')
+def home():
+    student_name = session.get('student_name')
+    return render_template(
+        'home.html',
+        title='Home Page',
+        year=datetime.now().year, 
+        student_name=student_name
+    )
+
+@app.route('/generate_outpass', methods=['POST', 'GET'])
+def generate_outpass():
+    reg_number = session.get('reg_number')
+    if request.method == 'POST':
+        out_date = request.form['out_date']
+        out_time = request.form['out_time']
+        in_date = request.form['in_date']
+        in_time = request.form['in_time']
+        reason = request.form['reason']
+        leave_type = request.form['leave_type']
+        
+        # Create a unique outpass_id
+        outpass_id = len(pd.read_csv('C:\\Users\\Eshwar\\Desktop\\PassPool\\data\\outpass.csv')) + 1
+        session['outpass_id']=outpass_id
+        
+        # Create a DataFrame with the new outpass data
+        new_outpass = pd.DataFrame({
+            'outpass_id': [outpass_id],
+            'registration_number': [reg_number],
+            'out_date': [out_date],
+            'out_time': [out_time],
+            'in_date': [in_date],
+            'in_time': [in_time],
+            'reason': [reason],
+            'leave_type': [leave_type]
+        })
+        
+        # Append the new outpass data to the outpass.csv file
+        new_outpass.to_csv('C:\\Users\\Eshwar\\Desktop\\PassPool\\data\\outpass.csv', mode='a', header=False, index=False)
+        
+        return redirect(url_for('success'))
+    
+    return render_template (
+        'generate_outpass.html',
+        title='Outpass Generator',
+        year=datetime.now().year, 
+        reg_number=reg_number
+    )
+
+@app.route('/success')
+def success():
+    return render_template (
+        'success.html',
+        title='Success',
+        year=datetime.now().year, 
+    )
+
+@app.route('/carpool')
+def carpool():
+    global trip_id_counter
+    reg_number = session.get('reg_number')
+    outpass_number = session.get('outpass_id')
+    if request.method == 'POST':
+        travel_date = request.form['travel_date']
+        travel_time = request.form['travel_time']
+        from_location = request.form['from_location']
+        to_location = request.form['to_location']
+        
+        # Increment trip ID counter to generate a unique trip ID
+        trip_id_counter = len(pd.read_csv('C:\\Users\\Eshwar\\Desktop\\PassPool\\data\\trip.csv')) + 1
+        
+        # Create a dictionary with the trip details including the generated trip ID
+        new_trip_data = pd.DataFrame({
+            'trip_id': trip_id_counter,
+            'registration_number':reg_number,
+            'outpass_number': outpass_number,
+            'date': travel_date,
+            'source': from_location,
+            'destination': to_location,
+            'time': travel_time
+        })
+        
+        # Append the trip data to the trip.csv file
+        new_trip_data.to_csv('C:\\Users\\Eshwar\\Desktop\\PassPool\\data\\trip.csv', mode='a', header=False, index=False)
+        
+        return redirect(url_for('available'))
+    
+    return render_template(
+        'carpool.html',
+        title='Carpool',
+        year=datetime.now().year
+    )
+
+@app.route('/available')
+def available():
+    return render_template (
+        'available.html',
+        title='Available Rides',
+        year=datetime.now().year, 
+    )
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+
+
+
+
+<script>
+        function goToWhichPage() {
+            outpass_df = pd.read_csv('C:\\Users\\Eshwar\\Desktop\\PassPool\\data\\outpass.csv')
+            user_outpasses = outpass_df[outpass_df['student_registration_number'] == reg_number]
+
+            if(user_outpasses[user_outpasses['status'] == 1]){
+                window.location.href = "{{ url_for('success') }}";
+            }
+            else if (user_outpasses[user_outpasses['status'] == 0]){
+                window.location.href = "{{url_for('under_review')}}"
+            }
+            else{
+                window.location.href = "{{url_for('rejected')}}"
+            }
+        }
+    </script>
+
+
+from flask import Flask, render_template, request
+import csv
+from geopy.distance import geodesic
+from datetime import datetime, timedelta
+
+app = Flask(_name_)
+
+# Function to calculate distance between two coordinates
+def calculate_distance(coord1, coord2):
+    return geodesic(coord1, coord2).kilometers
+
+# Function to check if time difference is within +/- 2 hours
+def within_time_range(time1, time2):
+    time_format = "%H:%M"
+    dt1 = datetime.strptime(time1, time_format)
+    dt2 = datetime.strptime(time2, time_format)
+    time_diff = abs((dt2 - dt1).total_seconds()) / 3600
+    return time_diff <= 2
+
+# Function to filter available rides based on criteria
+def filter_rides(your_coordinates, rides):
+    filtered_rides = []
+    for ride in rides:
+        ride_coordinates = (float(ride['latitude']), float(ride['longitude']))
+        distance = calculate_distance(your_coordinates, ride_coordinates)
+        time_match = within_time_range(your_time, ride['time'])
+        if distance <= 5 and time_match:
+            filtered_rides.append(ride)
+        elif distance <= 5 and not time_match:
+            filtered_rides.append(ride)
+        elif distance > 5 and time_match:
+            filtered_rides.append(ride)
+    return filtered_rides
+
+@app.route('/')
+def index():
+    return render_template('login.html')
+
+@app.route('/trip-details', methods=['POST'])
+def trip_details():
+    registration_number = request.form.get('registration_number')
+
+    with open('trip.csv', 'r') as file:
+        csv_reader = csv.DictReader(file)
+        trip_data = [row for row in csv_reader if row['registration_number'] == registration_number]
+
+    if len(trip_data) == 0:
+        return "Registration number not found!"
+
+    your_coordinates = (float(request.form.get('latitude')), float(request.form.get('longitude')))
+    your_time = request.form.get('time')
+
+    your_trip_details = trip_data[0]
+
+    available_rides = filter_rides(your_coordinates, trip_data)
+
+    return render_template('trip_details.html', trip_details=your_trip_details, available_rides=available_rides)
+
+if _name_ == "_main_":
+    app.run(debug=True)

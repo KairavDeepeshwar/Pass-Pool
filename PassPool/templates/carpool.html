@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Planner</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+    body {
+        font-family: Raleway;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #000000;
+    }
+    
+    .container {
+        width: 600px;
+        padding: 40px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+        line-height: 30px;
+        margin-top: 250px;
+        padding-top: 100px;
+    }
+
+    #map {
+        height: 200px;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    input{
+        margin-bottom: 10px;
+        padding: 10px;
+        width: 200px;
+    }
+    button {
+        width: 100%;
+        padding: 15px;
+        background-color: #2d138e;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 20px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        }
+
+    button:hover {
+        background-color: #dc712f;
+    }
+    #fromMap,#toMap{
+        border: 2px solid black;
+        margin-bottom: 20px;
+    }
+</style>
+</head>
+<body>
+    <br><br><br>
+    <div class="container">
+    <div id="map"></div><br><br><br>
+    <h1 style="color: #000000;text-align: center;">MY RIDE</h1>
+    <hr>
+    <div>
+        <label for="travelDate">Travel Date:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="date" id="travelDate" min="" max="" onchange="updateMinMaxTime()">
+    </div>
+    <div>
+        <label for="travelTime">Travel Time:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="time" id="travelTime">
+    </div>
+    <hr>
+    <div>
+        <label for="fromLocation">From Location:&nbsp;</label>
+        <input type="text" id="fromLocation">
+        <button onclick="geocodeFromLocation()">GET COORDINATES</button>
+    </div>
+    <h3>SOURCE:</h3>
+    <div id="fromMap" style="height: 300px; width: 100%;"></div>
+    <div id="fromCoordinates"></div>
+    <hr>
+    <div>
+        <label for="toLocation">To Location:</label>
+        <input type="text" id="toLocation">
+        <button onclick="geocodeToLocation()">GET COORDINATES</button>
+    </div>
+    <h3>DESTINATION:</h3>
+    <div id="toMap" style="height: 300px; width: 100%;"></div>
+    <div id="toCoordinates"></div>
+    <a href="{{url_for('home')}}"><button>SUBMIT</button></a>
+</div>
+
+
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    // Function to initialize map for "From" location
+var fromMap = L.map('fromMap').setView([0, 0], 2);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(fromMap);
+var fromMarker = null;
+
+// Function to initialize map for "To" location
+var toMap = L.map('toMap').setView([0, 0], 2);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(toMap);
+var toMarker = null;
+
+function geocodeFromLocation() {
+    var location = document.getElementById('fromLocation').value;
+    geocode(location, function(latitude, longitude) {
+        if (latitude !== null && longitude !== null) {
+            document.getElementById('fromCoordinates').innerHTML = 'From Latitude: ' + latitude + '<br>From Longitude: ' + longitude;
+            if (fromMarker) {
+                fromMarker.setLatLng([latitude, longitude]);
+            } else {
+                fromMarker = L.marker([latitude, longitude]).addTo(fromMap);
+            }
+            fromMap.setView([latitude, longitude], 13);
+        } else {
+            document.getElementById('fromCoordinates').innerHTML = 'From location not found';
+        }
+    });
+}
+
+function geocodeToLocation() {
+    var location = document.getElementById('toLocation').value;
+    geocode(location, function(latitude, longitude) {
+        if (latitude !== null && longitude !== null) {
+            document.getElementById('toCoordinates').innerHTML = 'To Latitude: ' + latitude + '<br>To Longitude: ' + longitude;
+            if (toMarker) {
+                toMarker.setLatLng([latitude, longitude]);
+            } else {
+                toMarker = L.marker([latitude, longitude]).addTo(toMap);
+            }
+            toMap.setView([latitude, longitude], 13);
+        } else {
+            document.getElementById('toCoordinates').innerHTML = 'To location not found';
+        }
+    });
+}
+
+function geocode(location, callback) {
+    // Make a request to Nominatim API to geocode the location
+    fetch('https://nominatim.openstreetmap.org/search?q=' + location + '&format=json')
+    .then(response => response.json())
+    .then(data => {
+        if (data && data.length > 0) {
+            var latitude = parseFloat(data[0].lat);
+            var longitude = parseFloat(data[0].lon);
+            callback(latitude, longitude);
+        } else {
+            callback(null, null);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        callback(null, null);
+    });
+}
+function submitTrip() {
+    var travelDate = document.getElementById('travelDate').value;
+    var travelTime = document.getElementById('travelTime').value;
+    var fromLocation = document.getElementById('fromLocation').value;
+    var toLocation = document.getElementById('toLocation').value;
+    fetch('/submit_trip', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            travelDate: travelDate,
+            travelTime: travelTime,
+            fromLocation: fromLocation,
+            toLocation: toLocation
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response from server:', data);
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+    });
+}
+
+        // Function to update min and max travel time based on selected travel date
+        function updateMinMaxTime() {
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+            var yyyy = today.getFullYear();
+
+            today = yyyy + '-' + mm + '-' + dd;
+            document.getElementById("travelDate").setAttribute("min", today);
+        }
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(chennaiMap);
+
+    var fromMarker = L.marker([13.0827, 80.2707], {draggable: true}).addTo(chennaiMap);
+    var toMarker = L.marker([13.0878, 80.2785], {draggable: true}).addTo(chennaiMap);
+
+    fromMarker.on('dragend', function(event) {
+        document.getElementById('fromLocation').value = event.target.getLatLng().lat + ', ' + event.target.getLatLng().lng;
+    });
+
+    toMarker.on('dragend', function(event) {
+        document.getElementById('toLocation').value = event.target.getLatLng().lat + ', ' + event.target.getLatLng().lng;
+    });
+
+    function updateFromMap() {
+        var fromLocation = document.getElementById('fromLocation').value.split(',');    
+        fromMarker.setLatLng(fromLocation);
+        chennaiMap.setView(fromLocation, 13);
+    }
+
+    function updateToMap() {
+        var toLocation = document.getElementById('toLocation').value.split(',');
+        toMarker.setLatLng(toLocation);
+        chennaiMap.setView(toLocation, 13);
+    }
+
+    // Update min and max values for travel time based on selected travel date
+    function updateMinMaxTime() {
+        var travelDate = document.getElementById('travelDate').value;
+        document.getElementById('travelTime').min = travelDate ? "00:00" : "";
+        document.getElementById('travelTime').max = travelDate ? "23:59" : "";
+    }
+    function goToHomePage() {
+        indow.location.href = "{{ url_for('home') }}";
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            background-color: #000000;
+            margin: 0;
+            padding: 0;
+            font-family: Raleway;
+        }
+
+        .container {
+            width: 480px;
+            height: 430px;
+            margin: 50px auto;
+            margin-top: 80px;
+            margin-right: 150px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            float: right;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 25px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: calc(100% - 42px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 20px;
+            margin-right: 20px;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 20px;
+            background-color: #2d138e;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 25px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #dc712f;
+        }
+
+        .error {
+            color: #dc712f;
+            margin-top: 10px;
+        }
+        img{
+            width: 700px;
+        }
+    </style>
+</head>
+<body>
+    <img src="static\images\logo.jpeg" style="color: whitesmoke; text-align: center;  margin-top: 90px; margin-left: 80px; font-size: 60px; float: left;">PASS&POOL</img>
+    <div class="container">
+        <h1 style="font-size: 40px;">VTOP Credentials</h1>
+        <form action="{{ url_for('auth') }}" method="post">
+            <label for="registration_number">Registration Number:</label><br>
+            <input type="text" id="registration_number" name="registration_number" placeholder="Enter your registration number" required><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required><br>
+            <button type="submit">Login</button>
+        </form>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+    </div>
+</body>
+</html>

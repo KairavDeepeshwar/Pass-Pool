@@ -1,0 +1,6 @@
+trip_id,registration_number,outpass_no,date,source,destination,time
+T001,22BAI1364,1,2024-04-21,VIT Chennai,Chennai Airport,14;00
+T002,22BAI1160,2,2024-04-21,VIT Chennai,Tambaram,14;00
+T003,22BAI1142,3,2024-04-22,VIT Chennai,Alandur Metro,07:00
+T004,22BAI1148,4,2024-04-13,VIT Chennai,Chennai Central,19:30
+T005,22BCE1307,5,2024-03-15,VIT Chennai,Egmore,16:00

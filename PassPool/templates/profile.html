@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Information</title>
+    <style>
+        body {
+            background-color: #000000;
+            margin: 0;
+            padding: 0;
+            font-family: Raleway, sans-serif;
+        }
+        
+        .container {
+            max-width: 800px;
+            padding: 20px;
+            margin-top: -100px;
+            margin-left: 360px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            padding-top: 20px;
+        }
+        
+        h1 {
+            font-size: 40px;
+            text-align: left;
+            color: #333;
+        }
+        
+        .student-info {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        
+        .outpass-section {
+            margin-top: 20px;
+        }
+        
+        .outpass-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .outpass-table th, .outpass-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .outpass-table th {
+            background-color: #f2f2f2;
+        }
+        
+        img {
+            width: 200px;
+            margin-top: 10px;
+            margin-left: 10px;
+            border-radius: 300px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <img src="static\images\logo.jpeg"></img>
+    <div class="container">
+        <h1>Student Information</h1>
+        <div class="student-info">
+            <img src="static\images\profile1.jpg">
+            <p><strong>Registration Number:</strong> {{ reg_number }}</p>
+            <p><strong>Student Name:</strong> {{ student_name }}</p>
+            <p><strong>Phone Number:</strong> {{ phone_number }}</p>
+        </div>
+        <div class="outpass-section">
+            <h2>Outpasses Under Review</h2>
+            <table class="outpass-table">
+                <tr>
+                    <th>Outpass No</th>
+                    <th>Out Date</th>
+                    <th>Out Time</th>
+                    <th>In Date</th>
+                    <th>In Time</th>
+                    <th>Reason</th>
+                    <th>Leave Type</th>
+                    <th>Status</th>
+                </tr>
+                {% for outpass in outpasses_under_review %}
+                <tr>
+                    <td>{{ outpass.outpass_no }}</td>
+                    <td>{{ outpass.out_date }}</td>
+                    <td>{{ outpass.out_time }}</td>
+                    <td>{{ outpass.in_date }}</td>
+                    <td>{{ outpass.in_time }}</td>
+                    <td>{{ outpass.reason }}</td>
+                    <td>{{ outpass.leave_type }}</td>
+                    <td>Under Review</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="outpass-section">
+            <h2>Approved Outpasses</h2>
+            <table class="outpass-table">
+                <tr>
+                    <th>Outpass No</th>
+                    <th>Out Date</th>
+                    <th>Out Time</th>
+                    <th>In Date</th>
+                    <th>In Time</th>
+                    <th>Reason</th>
+                    <th>Leave Type</th>
+                    <th>Status</th>
+                </tr>
+                {% for outpass in outpasses_approved %}
+                <tr>
+                    <td>{{ outpass.outpass_no }}</td>
+                    <td>{{ outpass.out_date }}</td>
+                    <td>{{ outpass.out_time }}</td>
+                    <td>{{ outpass.in_date }}</td>
+                    <td>{{ outpass.in_time }}</td>
+                    <td>{{ outpass.reason }}</td>
+                    <td>{{ outpass.leave_type }}</td>
+                    <td>Approved</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>    
+    </div>
+    <br><br><br><br>
+    <script>
+        
+    </script>
+</body>
+</html>

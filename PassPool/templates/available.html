@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Details</title>
+</head>
+<body>
+    <h2>Your Trip Details:</h2>
+    <p>Trip ID: {{ trip.trip_id }}</p>
+    <p>Registration Number: {{ trip.registration_number }}</p>
+    <p>Outpass No: {{ trip.outpass_no }}</p>
+    <p>Date: {{ trip.date }}</p>
+    <p>Source: {{ trip.source }}</p>
+    <p>Destination: {{ trip.destination }}</p>
+    <p>Time: {{ trip.time }}</p>
+    <h2>Available Rides:</h2>
+    <h3>Priority 1: Destination and Time Matched (Radius <= 5km, Time difference <= 2 hours)</h3>
+    <ul>
+        {% for ride in available_rides_priority1 %}
+        <li>
+            <p>Trip ID: {{ ride.trip_id }}</p>
+            <p>Registration Number: {{ ride.registration_number }}</p>
+            <p>Outpass No: {{ ride.outpass_no }}</p>
+            <p>Date: {{ ride.date }}</p>
+            <p>Source: {{ ride.source }}</p>
+            <p>Destination: {{ ride.destination }}</p>
+            <p>Time: {{ ride.time }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    <h3>Priority 2: Destination Matched, Time Not Matched (Radius <= 5km, Time difference > 2 hours)</h3>
+    <ul>
+        {% for ride in available_rides_priority2 %}
+        <li>
+            <p>Trip ID: {{ ride.trip_id }}</p>
+            <p>Registration Number: {{ ride.registration_number }}</p>
+            <p>Outpass No: {{ ride.outpass_no }}</p>
+            <p>Date: {{ ride.date }}</p>
+            <p>Source: {{ ride.source }}</p>
+            <p>Destination: {{ ride.destination }}</p>
+            <p>Time: {{ ride.time }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    <h3>Priority 3: Time Matched, Destination Not Matched (Radius > 5km, Time difference <= 2 hours)</h3>
+    <ul>
+        {% for ride in available_rides_priority3 %}
+        <li>
+            <p>Trip ID: {{ ride.trip_id }}</p>
+            <p>Registration Number: {{ ride.registration_number }}</p>
+            <p>Outpass No: {{ ride.outpass_no }}</p>
+            <p>Date: {{ ride.date }}</p>
+            <p>Source: {{ ride.source }}</p>
+            <p>Destination: {{ ride.destination }}</p>
+            <p>Time: {{ ride.time }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+
